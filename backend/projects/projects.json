@@ -30,7 +30,7 @@
         "code": "module.exports = {\n  plugins: {\n    tailwindcss: {},\n    autoprefixer: {},\n  },\n}"
       },
       "/components/Navbar.js": {
-        "code": "import React from 'react';\nimport { Link } from 'react-router-dom';\nimport { Heart } from 'lucide-react';\n\nfunction Navbar() {\n  return (\n    <nav className=\"bg-white shadow-md\">\n      <div className=\"container mx-auto py-4 flex justify-between items-center\">\n        <Link to=\"/\" className=\"text-2xl font-bold text-pink-500 flex items-center\">\n          <Heart className=\"mr-2\" size={24} />\n          FloralDelight 123\n        </Link>\n        <div className=\"space-x-4\">\n          <Link to=\"/\" className=\"text-gray-700 hover:text-pink-500\">Home</Link>\n          <Link to=\"/about\" className=\"text-gray-700 hover:text-pink-500\">About</Link>\n          <Link to=\"/products\" className=\"text-gray-700 hover:text-pink-500\">Products</Link>\n          <Link to=\"/contact\" className=\"text-gray-700 hover:text-pink-500\">Contact</Link>\n        </div>\n      </div>\n    </nav>\n  );\n}\n\nexport default Navbar;"
+        "code": "import React from 'react';\nimport { Link } from 'react-router-dom';\nimport { Heart } from 'lucide-react';\n\nfunction Navbar() {\n  return (\n    <nav className=\"bg-white shadow-md\">\n      <div className=\"container mx-auto py-4 flex justify-between items-center\">\n        <Link to=\"/\" className=\"text-2xl font-bold text-pink-500 flex items-center\">\n          <Heart className=\"mr-2\" size={24} />\n          FloralDelight 123 45\n        </Link>\n        <div className=\"space-x-4\">\n          <Link to=\"/\" className=\"text-gray-700 hover:text-pink-500\">Home</Link>\n          <Link to=\"/about\" className=\"text-gray-700 hover:text-pink-500\">About</Link>\n          <Link to=\"/products\" className=\"text-gray-700 hover:text-pink-500\">Products</Link>\n          <Link to=\"/contact\" className=\"text-gray-700 hover:text-pink-500\">Contact</Link>\n        </div>\n      </div>\n    </nav>\n  );\n}\n\nexport default Navbar;"
       },
       "/components/Footer.js": {
         "code": "import React from 'react';\n\nfunction Footer() {\n  return (\n    <footer className=\"bg-pink-200 py-4 text-center\">\n      <p className=\"text-gray-600\">\u00a9 {new Date().getFullYear()} FloralDelight. All rights reserved.</p>\n    </footer>\n  );\n}\n\nexport default Footer;"
@@ -58,7 +58,7 @@
       }
     },
     "created_at": "2025-08-06T01:33:03.537388",
-    "updated_at": "2025-08-06T01:46:59.310625",
+    "updated_at": "2025-08-06T02:18:44.014245",
     "thumbnail": null
   },
   {
