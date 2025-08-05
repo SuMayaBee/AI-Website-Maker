@@ -4,7 +4,9 @@ from pydantic import BaseModel
 import google.generativeai as genai
 import os
 import json
-from typing import Optional
+from typing import Optional, List, Dict, Any
+from datetime import datetime
+import uuid
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -69,6 +71,30 @@ class EnhancePromptResponse(BaseModel):
 class CodeGenerationRequest(BaseModel):
     prompt: str
 
+# Project management models
+class Project(BaseModel):
+    id: str
+    title: str
+    description: str
+    prompt: str
+    files: Dict[str, Any]
+    created_at: str
+    updated_at: str
+    thumbnail: Optional[str] = None
+
+class CreateProjectRequest(BaseModel):
+    title: str
+    description: str
+    prompt: str
+    files: Dict[str, Any]
+    thumbnail: Optional[str] = None
+
+class UpdateProjectRequest(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    files: Optional[Dict[str, Any]] = None
+    thumbnail: Optional[str] = None
+
 @app.get("/")
 async def root():
     return {"message": "AI Website Builder FastAPI Backend"}
@@ -76,6 +102,33 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+# Simple file-based storage for projects
+PROJECTS_DIR = "projects"
+PROJECTS_FILE = os.path.join(PROJECTS_DIR, "projects.json")
+
+def ensure_projects_dir():
+    """Ensure projects directory exists"""
+    if not os.path.exists(PROJECTS_DIR):
+        os.makedirs(PROJECTS_DIR)
+
+def load_projects() -> List[Dict]:
+    """Load projects from JSON file"""
+    ensure_projects_dir()
+    if not os.path.exists(PROJECTS_FILE):
+        return []
+    
+    try:
+        with open(PROJECTS_FILE, 'r') as f:
+            return json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
+        return []
+
+def save_projects(projects: List[Dict]):
+    """Save projects to JSON file"""
+    ensure_projects_dir()
+    with open(PROJECTS_FILE, 'w') as f:
+        json.dump(projects, f, indent=2)
 # Prompt templates (from data/Prompt.jsx)
 CHAT_PROMPT = """
 You are an AI Assistant and experienced in React Development.
@@ -244,6 +297,108 @@ async def generate_ai_code(request: CodeGenerationRequest):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Code generation error: {str(e)}")
+
+# Project Management Endpoints
+
+@app.get("/api/projects", response_model=List[Project])
+async def get_projects():
+    """Get all projects"""
+    try:
+        projects = load_projects()
+        return projects
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading projects: {str(e)}")
+
+@app.get("/api/projects/{project_id}", response_model=Project)
+async def get_project(project_id: str):
+    """Get a specific project by ID"""
+    try:
+        projects = load_projects()
+        project = next((p for p in projects if p["id"] == project_id), None)
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        return project
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading project: {str(e)}")
+
+@app.post("/api/projects", response_model=Project)
+async def create_project(request: CreateProjectRequest):
+    """Create a new project"""
+    try:
+        projects = load_projects()
+        
+        # Create new project
+        project_id = str(uuid.uuid4())
+        current_time = datetime.now().isoformat()
+        
+        new_project = {
+            "id": project_id,
+            "title": request.title,
+            "description": request.description,
+            "prompt": request.prompt,
+            "files": request.files,
+            "created_at": current_time,
+            "updated_at": current_time,
+            "thumbnail": request.thumbnail
+        }
+        
+        projects.append(new_project)
+        save_projects(projects)
+        
+        return new_project
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating project: {str(e)}")
+
+@app.put("/api/projects/{project_id}", response_model=Project)
+async def update_project(project_id: str, request: UpdateProjectRequest):
+    """Update an existing project"""
+    try:
+        projects = load_projects()
+        project_index = next((i for i, p in enumerate(projects) if p["id"] == project_id), None)
+        
+        if project_index is None:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Update project fields
+        project = projects[project_index]
+        if request.title is not None:
+            project["title"] = request.title
+        if request.description is not None:
+            project["description"] = request.description
+        if request.files is not None:
+            project["files"] = request.files
+        if request.thumbnail is not None:
+            project["thumbnail"] = request.thumbnail
+        
+        project["updated_at"] = datetime.now().isoformat()
+        
+        save_projects(projects)
+        return project
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating project: {str(e)}")
+
+@app.delete("/api/projects/{project_id}")
+async def delete_project(project_id: str):
+    """Delete a project"""
+    try:
+        projects = load_projects()
+        project_index = next((i for i, p in enumerate(projects) if p["id"] == project_id), None)
+        
+        if project_index is None:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        deleted_project = projects.pop(project_index)
+        save_projects(projects)
+        
+        return {"message": "Project deleted successfully", "project": deleted_project}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting project: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

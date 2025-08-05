@@ -116,6 +116,22 @@ function Hero() {
                         </div>
                     </div>
 
+                    {/* Quick Actions */}
+                    <div className="w-full max-w-3xl mb-8">
+                        <div className="flex justify-center">
+                            <button
+                                onClick={() => router.push('/projects')}
+                                className="flex items-center gap-2 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 hover:border-gray-600 px-6 py-3 rounded-xl transition-all duration-200 text-gray-300 hover:text-white"
+                            >
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z" />
+                                </svg>
+                                View My Projects
+                            </button>
+                        </div>
+                    </div>
+
                     {/* Holographic Suggestions Grid */}
                     <div className="w-full max-w-5xl">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

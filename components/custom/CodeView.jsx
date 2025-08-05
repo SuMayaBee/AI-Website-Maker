@@ -1,18 +1,19 @@
 "use client"
-import React, { use, useContext } from 'react';
+import React, { use, useContext, useRef } from 'react';
 import { useState } from 'react';
 import {
     SandpackProvider,
     SandpackLayout,
     SandpackCodeEditor,
     SandpackPreview,
-    SandpackFileExplorer
+    SandpackFileExplorer,
+    useSandpack
 } from "@codesandbox/sandpack-react";
 import Lookup from '@/data/Lookup';
 import { MessagesContext } from '@/context/MessagesContext';
 import axios from 'axios';
 import Prompt from '@/data/Prompt';
-import { generateAICode } from '@/lib/fastapi-client';
+import { generateAICode, createProject, updateProject, getProject } from '@/lib/fastapi-client';
 import { useEffect } from 'react';
 import { UpdateFiles } from '@/convex/workspace';
 import { useConvex, useMutation } from 'convex/react';
@@ -20,6 +21,69 @@ import { useParams } from 'next/navigation';
 import { api } from '@/convex/_generated/api';
 import { Loader2Icon, Download } from 'lucide-react';
 import JSZip from 'jszip';
+
+// Component to listen for code changes and auto-save
+function CodeChangeListener({ onFilesChange, projectId, currentProjectId }) {
+    const { sandpack } = useSandpack();
+    const [lastSavedFiles, setLastSavedFiles] = useState(null);
+    const saveTimeoutRef = useRef(null);
+
+    useEffect(() => {
+        const currentFiles = sandpack.files;
+        
+        // Initialize lastSavedFiles if it's null
+        if (lastSavedFiles === null) {
+            setLastSavedFiles(JSON.parse(JSON.stringify(currentFiles))); // Deep copy
+            return;
+        }
+        
+        // Check if files have actually changed by comparing content
+        const hasChanged = Object.keys(currentFiles).some(filePath => {
+            const currentContent = currentFiles[filePath]?.code || '';
+            const lastContent = lastSavedFiles[filePath]?.code || '';
+            return currentContent !== lastContent;
+        }) || Object.keys(lastSavedFiles).some(filePath => {
+            // Check for deleted files
+            return !currentFiles[filePath];
+        });
+        
+        if (hasChanged) {
+            console.log('Files changed, scheduling save...', {
+                currentFileCount: Object.keys(currentFiles).length,
+                lastSavedFileCount: Object.keys(lastSavedFiles).length
+            });
+            
+            // Clear existing timeout
+            if (saveTimeoutRef.current) {
+                clearTimeout(saveTimeoutRef.current);
+            }
+            
+            // Debounce the save operation to avoid too many API calls
+            saveTimeoutRef.current = setTimeout(() => {
+                console.log('Auto-saving files...', Object.keys(currentFiles));
+                setLastSavedFiles(JSON.parse(JSON.stringify(currentFiles))); // Deep copy
+                onFilesChange(currentFiles);
+            }, 1500); // Save after 1.5 seconds of no changes
+        }
+
+        return () => {
+            if (saveTimeoutRef.current) {
+                clearTimeout(saveTimeoutRef.current);
+            }
+        };
+    }, [sandpack.files, lastSavedFiles, onFilesChange]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (saveTimeoutRef.current) {
+                clearTimeout(saveTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    return null; // This component doesn't render anything
+}
 
 function CodeView() {
 
@@ -30,19 +94,41 @@ function CodeView() {
     const UpdateFiles=useMutation(api.workspace.UpdateFiles);
     const convex=useConvex();
     const [loading,setLoading]=useState(false);
+    const [currentProjectId, setCurrentProjectId] = useState(null); // Track current project ID
+    const [isSaving, setIsSaving] = useState(false); // Track auto-save status
 
     useEffect(() => {
         id&&GetFiles();
     }, [id])
 
     const GetFiles=async()=>{
-        const result=await convex.query(api.workspace.GetWorkspace,{
-            workspaceId:id
-        });
-        // Preprocess and validate files before merging
-        const processedFiles = preprocessFiles(result?.fileData || {});
-        const mergedFiles = {...Lookup.DEFAULT_FILE, ...processedFiles};
-        setFiles(mergedFiles);
+        try {
+            // Check if this is a project ID (starts with 'project-')
+            if (id.startsWith('project-')) {
+                const projectId = id.replace('project-', '');
+                const project = await getProject(projectId);
+                
+                // Load project files
+                if (project.files) {
+                    const processedFiles = preprocessFiles(project.files);
+                    const mergedFiles = {...Lookup.DEFAULT_FILE, ...processedFiles};
+                    setFiles(mergedFiles);
+                }
+            } else {
+                // This is a regular Convex workspace
+                const result = await convex.query(api.workspace.GetWorkspace, {
+                    workspaceId: id
+                });
+                // Preprocess and validate files before merging
+                const processedFiles = preprocessFiles(result?.fileData || {});
+                const mergedFiles = {...Lookup.DEFAULT_FILE, ...processedFiles};
+                setFiles(mergedFiles);
+            }
+        } catch (error) {
+            console.error('Error loading files:', error);
+            // Keep default files if loading fails
+            setFiles(Lookup.DEFAULT_FILE);
+        }
     }
 
     // Add file preprocessing function
@@ -83,16 +169,132 @@ function CodeView() {
             const mergedFiles = {...Lookup.DEFAULT_FILE, ...processedAiFiles};
             setFiles(mergedFiles);
 
-            await UpdateFiles({
-                workspaceId:id,
-                files:result?.files
-            });
+            // Only update Convex if this is a regular workspace, not a project
+            if (!id.startsWith('project-')) {
+                await UpdateFiles({
+                    workspaceId:id,
+                    files:result?.files
+                });
+            }
+
+            // Auto-save project to FastAPI backend
+            await saveProjectToBackend(result);
         } catch (error) {
             console.error('Error generating AI code:', error);
         }
         setLoading(false);
     }
+
+    const saveProjectToBackend = async (aiResult) => {
+        try {
+            if (!aiResult || !aiResult.files) return;
+
+            // Check if we're working on an existing project
+            const isExistingProject = id.startsWith('project-');
+            const existingProjectId = isExistingProject ? id.replace('project-', '') : null;
+
+            // Extract project title from AI result or use first user message
+            const projectTitle = aiResult.projectTitle || 
+                (messages && messages.length > 0 ? 
+                    messages.find(m => m.role === 'user')?.content?.substring(0, 50) + '...' : 
+                    'Untitled Project');
+
+            const projectDescription = aiResult.explanation || 
+                'AI-generated project created from user prompt';
+
+            const userPrompt = messages && messages.length > 0 ? 
+                messages.find(m => m.role === 'user')?.content || '' : '';
+
+            if (isExistingProject && existingProjectId) {
+                // Update existing project (viewing from projects page)
+                const updateData = {
+                    title: projectTitle,
+                    description: projectDescription,
+                    files: aiResult.files,
+                    thumbnail: null
+                };
+                
+                await updateProject(existingProjectId, updateData);
+                console.log('Project updated successfully');
+            } else if (currentProjectId) {
+                // Update project created in this session
+                const updateData = {
+                    title: projectTitle,
+                    description: projectDescription,
+                    files: aiResult.files,
+                    thumbnail: null
+                };
+                
+                await updateProject(currentProjectId, updateData);
+                console.log('Session project updated successfully');
+            } else {
+                // Create new project and store its ID for future updates
+                const projectData = {
+                    title: projectTitle,
+                    description: projectDescription,
+                    prompt: userPrompt,
+                    files: aiResult.files,
+                    thumbnail: null
+                };
+
+                const newProject = await createProject(projectData);
+                setCurrentProjectId(newProject.id); // Store the project ID for future updates
+                console.log('New project created successfully:', newProject.id);
+            }
+        } catch (error) {
+            console.error('Error saving project to backend:', error);
+            // Don't show error to user as this is background functionality
+        }
+    }
     
+    // Handle file changes from the code editor
+    const handleFilesChange = async (updatedFiles) => {
+        try {
+            setIsSaving(true);
+            
+            // Update local state
+            setFiles(updatedFiles);
+            
+            // Auto-save to backend
+            await saveFilesToBackend(updatedFiles);
+            
+            setIsSaving(false);
+        } catch (error) {
+            console.error('Error handling file changes:', error);
+            setIsSaving(false);
+        }
+    };
+
+    // Save file changes to backend
+    const saveFilesToBackend = async (updatedFiles) => {
+        try {
+            // Check if we're working on an existing project
+            const isExistingProject = id.startsWith('project-');
+            const existingProjectId = isExistingProject ? id.replace('project-', '') : null;
+
+            if (isExistingProject && existingProjectId) {
+                // Update existing project with new files
+                const updateData = {
+                    files: updatedFiles
+                };
+                
+                await updateProject(existingProjectId, updateData);
+                console.log('Project files updated successfully');
+            } else if (currentProjectId) {
+                // Update project created in this session
+                const updateData = {
+                    files: updatedFiles
+                };
+                
+                await updateProject(currentProjectId, updateData);
+                console.log('Session project files updated successfully');
+            }
+            // If no project exists yet, files will be saved when AI generates code
+        } catch (error) {
+            console.error('Error saving files to backend:', error);
+        }
+    };
+
     const downloadFiles = async () => {
         try {
             // Create a new JSZip instance
@@ -169,14 +371,24 @@ function CodeView() {
                             Preview</h2>
                     </div>
                     
-                    {/* Download Button */}
-                    <button
-                        onClick={downloadFiles}
-                        className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition-colors duration-200"
-                    >
-                        <Download className="h-4 w-4" />
-                        <span>Download Files</span>
-                    </button>
+                    <div className="flex items-center gap-3">
+                        {/* Auto-save indicator */}
+                        {isSaving && (
+                            <div className="flex items-center gap-2 text-yellow-400 text-sm">
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-yellow-400"></div>
+                                <span>Saving...</span>
+                            </div>
+                        )}
+                        
+                        {/* Download Button */}
+                        <button
+                            onClick={downloadFiles}
+                            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition-colors duration-200"
+                        >
+                            <Download className="h-4 w-4" />
+                            <span>Download Files</span>
+                        </button>
+                    </div>
                 </div>
             </div>
             <SandpackProvider 
@@ -196,6 +408,11 @@ function CodeView() {
                 recompileDelay: 300
             }}
             >
+                <CodeChangeListener 
+                    onFilesChange={handleFilesChange}
+                    projectId={id}
+                    currentProjectId={currentProjectId}
+                />
                 <div className="relative">
                     <SandpackLayout>
                         {activeTab=='code'?<>

@@ -1,0 +1,102 @@
+[
+  {
+    "id": "4723d949-d365-4acd-a0a5-c81219667ed1",
+    "title": "Pinky Floral Girl Website",
+    "description": "This React project is designed to create a visually appealing, pinky, floral, and girly website using Tailwind CSS for styling. The project is structured modularly with components organized into folders like /components, /pages, and /styles. It includes reusable components such as buttons, cards, and forms. Images are sourced from the internet (using appropriate URLs) to avoid local storage. The project utilizes several dependencies, including tailwindcss, lucide-react, react-router-dom, and others specified in the dependencies list. The App.js file is the main entry point and is structured to set up the basic layout and navigation of the website. No backend or database functionality is included.",
+    "prompt": "create visually appealing website",
+    "files": {
+      "/styles.css": {
+        "code": "body {\n  font-family: sans-serif;\n  -webkit-font-smoothing: auto;\n  -moz-font-smoothing: auto;\n  -moz-osx-font-smoothing: grayscale;\n  font-smoothing: auto;\n  text-rendering: optimizeLegibility;\n  font-smooth: always;\n  -webkit-tap-highlight-color: transparent;\n  -webkit-touch-callout: none;\n}\n\nh1 {\n  font-size: 1.5rem;\n}"
+      },
+      "/App.js": {
+        "code": "import React from 'react';\nimport { BrowserRouter as Router, Route, Routes } from 'react-router-dom';\nimport HomePage from './pages/HomePage';\nimport AboutPage from './pages/AboutPage';\nimport ProductsPage from './pages/ProductsPage';\nimport ContactPage from './pages/ContactPage';\nimport Navbar from './components/Navbar';\nimport Footer from './components/Footer';\n\nfunction App() {\n  return (\n    <Router>\n      <div className=\"bg-pink-100 min-h-screen font-serif\">\n        <Navbar />\n        <main className=\"container mx-auto py-6\">\n          <Routes>\n            <Route path=\"/\" element={<HomePage />} />\n            <Route path=\"/about\" element={<AboutPage />} />\n            <Route path=\"/products\" element={<ProductsPage />} />\n            <Route path=\"/contact\" element={<ContactPage />} />\n          </Routes>\n        </main>\n        <Footer />\n      </div>\n    </Router>\n  );\n}\n\nexport default App;"
+      },
+      "/index.js": {
+        "code": "import React, { StrictMode } from \"react\";\nimport { createRoot } from \"react-dom/client\";\nimport \"./styles.css\";\n\nimport App from \"./App\";\n\nconst root = createRoot(document.getElementById(\"root\"));\nroot.render(\n  <StrictMode>\n    <App />\n  </StrictMode>\n);"
+      },
+      "/public/index.html": {
+        "code": "<!DOCTYPE html>\n            <html lang=\"en\">\n            <head>\n              <meta charset=\"UTF-8\">\n              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n              <title>Document</title>\n              <script src=\"https://cdn.tailwindcss.com\"></script>\n            </head>\n            <body>\n              <div id=\"root\"></div>\n            </body>\n            </html>"
+      },
+      "/package.json": {
+        "code": "{\n  \"name\": \"pinky-floral-website\",\n  \"private\": true,\n  \"version\": \"0.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"lint\": \"eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"@headlessui/react\": \"^1.7.17\",\n    \"@mui/material\": \"^6.4.6\",\n    \"autoprefixer\": \"^10.0.0\",\n    \"firebase\": \"^11.1.0\",\n    \"framer-motion\": \"^10.0.0\",\n    \"lucide-react\": \"latest\",\n    \"postcss\": \"^8\",\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\",\n    \"react-icons\": \"^5.0.0\",\n    \"react-router-dom\": \"latest\",\n    \"tailwind-merge\": \"^2.4.0\",\n    \"tailwindcss\": \"^3.4.1\",\n    \"tailwindcss-animate\": \"^1.0.7\",\n    \"uuid\": \"^11.1.0\",\n    \"uuid4\": \"^2.0.3\",\n    \"@google/generative-ai\": \"^0.21.0\",\n    \"@heroicons/react\": \"^1.0.6\",\n    \"react-toastify\": \"^10.0.0\",\n    \"uuidv4\": \"^6.2.13\"\n  },\n  \"devDependencies\": {\n    \"@types/react\": \"^18.2.15\",\n    \"@types/react-dom\": \"^18.2.7\",\n    \"@vitejs/plugin-react\": \"^4.0.3\",\n    \"eslint\": \"^8.45.0\",\n    \"eslint-plugin-react\": \"^7.32.2\",\n    \"eslint-plugin-react-hooks\": \"^4.6.0\",\n    \"eslint-plugin-react-refresh\": \"^0.4.3\",\n    \"vite\": \"^4.4.5\"\n  },\n  \"main\": \"/index.js\"\n}"
+      },
+      "/App.css": {
+        "code": "@tailwind base;\n            @tailwind components;\n            @tailwind utilities;"
+      },
+      "/tailwind.config.js": {
+        "code": "/** @type {import('tailwindcss').Config} */\nmodule.exports = {\n  content: [\n    \"./App.js\",\n    \"./components/**/*.{js,jsx,ts,tsx}\",\n    \"./pages/**/*.{js,jsx,ts,tsx}\",\n  ],\n  theme: {\n    extend: {\n      fontFamily: {\n        'serif': ['ui-serif', 'Georgia', 'Cambria', 'Times New Roman', 'Times', 'serif'],\n      },\n    },\n  },\n  plugins: [\n    require('tailwindcss-animate'),\n  ],\n}"
+      },
+      "/postcss.config.js": {
+        "code": "module.exports = {\n  plugins: {\n    tailwindcss: {},\n    autoprefixer: {},\n  },\n}"
+      },
+      "/components/Navbar.js": {
+        "code": "import React from 'react';\nimport { Link } from 'react-router-dom';\nimport { Heart } from 'lucide-react';\n\nfunction Navbar() {\n  return (\n    <nav className=\"bg-white shadow-md\">\n      <div className=\"container mx-auto py-4 flex justify-between items-center\">\n        <Link to=\"/\" className=\"text-2xl font-bold text-pink-500 flex items-center\">\n          <Heart className=\"mr-2\" size={24} />\n          FloralDelight 123\n        </Link>\n        <div className=\"space-x-4\">\n          <Link to=\"/\" className=\"text-gray-700 hover:text-pink-500\">Home</Link>\n          <Link to=\"/about\" className=\"text-gray-700 hover:text-pink-500\">About</Link>\n          <Link to=\"/products\" className=\"text-gray-700 hover:text-pink-500\">Products</Link>\n          <Link to=\"/contact\" className=\"text-gray-700 hover:text-pink-500\">Contact</Link>\n        </div>\n      </div>\n    </nav>\n  );\n}\n\nexport default Navbar;"
+      },
+      "/components/Footer.js": {
+        "code": "import React from 'react';\n\nfunction Footer() {\n  return (\n    <footer className=\"bg-pink-200 py-4 text-center\">\n      <p className=\"text-gray-600\">\u00a9 {new Date().getFullYear()} FloralDelight. All rights reserved.</p>\n    </footer>\n  );\n}\n\nexport default Footer;"
+      },
+      "/components/Button.js": {
+        "code": "import React from 'react';\nimport { twMerge } from 'tailwind-merge';\n\nfunction Button({ children, className, ...props }) {\n  const baseButtonClasses = `\n    px-4\n    py-2\n    rounded-md\n    font-semibold\n    text-white\n    bg-pink-500\n    hover:bg-pink-700\n    focus:outline-none\n    focus:ring-2\n    focus:ring-pink-300\n    transition-colors\n    duration-200\n  `;\n\n  const mergedClasses = twMerge(baseButtonClasses, className);\n\n  return (\n    <button className={mergedClasses} {...props}>\n      {children}\n    </button>\n  );\n}\n\nexport default Button;"
+      },
+      "/components/Card.js": {
+        "code": "import React from 'react';\n\nfunction Card({ title, description, imageUrl }) {\n  return (\n    <div className=\"bg-white rounded-lg shadow-md overflow-hidden\">\n      <img className=\"w-full h-48 object-cover\" src={imageUrl} alt={title} />\n      <div className=\"p-4\">\n        <h3 className=\"text-xl font-semibold mb-2 text-pink-500\">{title}</h3>\n        <p className=\"text-gray-700\">{description}</p>\n      </div>\n    </div>\n  );\n}\n\nexport default Card;"
+      },
+      "/components/ContactForm.js": {
+        "code": "import React, { useState } from 'react';\nimport Button from './Button';\n\nfunction ContactForm() {\n  const [name, setName] = useState('');\n  const [email, setEmail] = useState('');\n  const [message, setMessage] = useState('');\n\n  const handleSubmit = (e) => {\n    e.preventDefault();\n    // Handle form submission logic here\n    console.log('Form submitted:', { name, email, message });\n    // Reset form fields\n    setName('');\n    setEmail('');\n    setMessage('');\n  };\n\n  return (\n    <form onSubmit={handleSubmit} className=\"space-y-4\">\n      <div>\n        <label htmlFor=\"name\" className=\"block text-gray-700 text-sm font-bold mb-2\">Name:</label>\n        <input\n          type=\"text\"\n          id=\"name\"\n          className=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"\n          value={name}\n          onChange={(e) => setName(e.target.value)}\n          required\n        />\n      </div>\n      <div>\n        <label htmlFor=\"email\" className=\"block text-gray-700 text-sm font-bold mb-2\">Email:</label>\n        <input\n          type=\"email\"\n          id=\"email\"\n          className=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"\n          value={email}\n          onChange={(e) => setEmail(e.target.value)}\n          required\n        />\n      </div>\n      <div>\n        <label htmlFor=\"message\" className=\"block text-gray-700 text-sm font-bold mb-2\">Message:</label>\n        <textarea\n          id=\"message\"\n          className=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"\n          rows=\"4\"\n          value={message}\n          onChange={(e) => setMessage(e.target.value)}\n          required\n        ></textarea>\n      </div>\n      <Button type=\"submit\">Submit</Button>\n    </form>\n  );\n}\n\nexport default ContactForm;"
+      },
+      "/pages/HomePage.js": {
+        "code": "import React from 'react';\nimport Card from '../components/Card';\n\nfunction HomePage() {\n  return (\n    <div className=\"space-y-6\">\n      <h1 className=\"text-3xl font-bold text-pink-600 text-center\">Welcome to FloralDelight!</h1>\n      <p className=\"text-gray-700 text-center\">Discover the beauty of flowers with our curated collection.</p>\n\n      <div className=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6\">\n        <Card\n          title=\"Rose Bouquet\"\n          description=\"A classic bouquet of red roses for your loved one.\"\n          imageUrl=\"https://images.pexels.com/photos/1027512/pexels-photo-1027512.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1\"\n        />\n        <Card\n          title=\"Sunflower Arrangement\"\n          description=\"Brighten someone's day with a cheerful sunflower arrangement.\"\n          imageUrl=\"https://images.pexels.com/photos/736230/pexels-photo-736230.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1\"\n        />\n        <Card\n          title=\"Mixed Floral Basket\"\n          description=\"A beautiful assortment of mixed flowers in a charming basket.\"\n          imageUrl=\"https://images.pexels.com/photos/1450363/pexels-photo-1450363.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1\"\n        />\n      </div>\n    </div>\n  );\n}\n\nexport default HomePage;"
+      },
+      "/pages/AboutPage.js": {
+        "code": "import React from 'react';\n\nfunction AboutPage() {\n  return (\n    <div className=\"space-y-4\">\n      <h1 className=\"text-2xl font-bold text-pink-600\">About Us</h1>\n      <p className=\"text-gray-700\">FloralDelight is dedicated to providing beautiful and fresh flowers for all occasions. Our mission is to bring joy and beauty into people's lives through the art of floral design.</p>\n      <p className=\"text-gray-700\">We source our flowers from local growers and select the highest quality blooms to create stunning arrangements that are sure to impress.</p>\n    </div>\n  );\n}\n\nexport default AboutPage;"
+      },
+      "/pages/ProductsPage.js": {
+        "code": "import React from 'react';\nimport Card from '../components/Card';\n\nfunction ProductsPage() {\n  return (\n    <div className=\"space-y-4\">\n      <h1 className=\"text-2xl font-bold text-pink-600\">Our Products</h1>\n      <div className=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6\">\n        <Card\n          title=\"Lily Bouquet\"\n          description=\"Elegant lilies for any occasion.\"\n          imageUrl=\"https://images.pexels.com/photos/635264/pexels-photo-635264.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1\"\n        />\n        <Card\n          title=\"Orchid Arrangement\"\n          description=\"Exotic orchids to add a touch of luxury.\"\n          imageUrl=\"https://images.pexels.com/photos/572167/pexels-photo-572167.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1\"\n        />\n        <Card\n          title=\"Tulip Bouquet\"\n          description=\"Colorful tulips to brighten your day.\"\n          imageUrl=\"https://images.pexels.com/photos/1373833/pexels-photo-1373833.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1\"\n        />\n      </div>\n    </div>\n  );\n}\n\nexport default ProductsPage;"
+      },
+      "/pages/ContactPage.js": {
+        "code": "import React from 'react';\nimport ContactForm from '../components/ContactForm';\n\nfunction ContactPage() {\n  return (\n    <div className=\"space-y-4\">\n      <h1 className=\"text-2xl font-bold text-pink-600\">Contact Us</h1>\n      <p className=\"text-gray-700\">We'd love to hear from you! Please fill out the form below to get in touch.</p>\n      <ContactForm />\n    </div>\n  );\n}\n\nexport default ContactPage;"
+      }
+    },
+    "created_at": "2025-08-06T01:33:03.537388",
+    "updated_at": "2025-08-06T01:46:59.310625",
+    "thumbnail": null
+  },
+  {
+    "id": "c56bd8e1-4c77-4cf7-82b8-8f197f499673",
+    "title": "PlayStation Vibe Project",
+    "description": "This React project aims to emulate a PlayStation-like interface using Tailwind CSS for styling. It includes modular components, page routing, reusable UI elements, and utilizes external images to simulate a dynamic application.  The project uses functional components and adheres to a clear folder structure for maintainability. No backend or database integrations are included in this version. The core functionality revolves around navigating different 'pages' within the application, akin to selecting options on a PlayStation menu. Placeholder images are used to represent various content types. The App.js file serves as the main entry point and sets up the routing and overall layout.",
+    "prompt": "create a playstation vibe of project",
+    "files": {
+      "/App.js": {
+        "code": "import React from 'react';\nimport { BrowserRouter as Router, Route, Routes } from 'react-router-dom';\nimport HomePage from './pages/HomePage';\nimport GamesPage from './pages/GamesPage';\nimport SettingsPage from './pages/SettingsPage';\nimport Button from './components/Button';\nimport Card from './components/Card';\n\nfunction App() {\n  return (\n    <Router>\n      <div className=\"bg-gray-900 text-white min-h-screen flex flex-col\">\n        <header className=\"bg-gray-800 p-4\">\n          <h1 className=\"text-2xl font-bold text-center\">PlayStation-like Interface</h1>\n        </header>\n\n        <main className=\"flex-grow p-4\">\n          <Routes>\n            <Route path=\"/\" element={<HomePage />} />\n            <Route path=\"/games\" element={<GamesPage />} />\n            <Route path=\"/settings\" element={<SettingsPage />} />\n          </Routes>\n        </main>\n\n        <footer className=\"bg-gray-800 p-4 text-center\">\n          <p>&copy; 2024 PlayStation Vibe</p>\n          <Button onClick={() => alert('Button Clicked')} className=\"mt-2\">Example Button</Button>\n          <Card title=\"Example Card\" content=\"This is an example card.\" />\n        </footer>\n      </div>\n    </Router>\n  );\n}\n\nexport default App;"
+      },
+      "/components/Button.js": {
+        "code": "import React from 'react';\nimport { twMerge } from 'tailwind-merge';\n\nconst Button = ({ children, className, ...props }) => {\n  const defaultClassName = 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline';\n  const mergedClassName = twMerge(defaultClassName, className);\n\n  return (\n    <button className={mergedClassName} {...props}>\n      {children}\n    </button>\n  );\n};\n\nexport default Button;"
+      },
+      "/components/Card.js": {
+        "code": "import React from 'react';\n\nconst Card = ({ title, content }) => {\n  return (\n    <div className=\"bg-gray-700 shadow-md rounded px-8 pt-6 pb-8 mb-4\">\n      <div className=\"text-xl font-bold mb-2\">{title}</div>\n      <p className=\"text-gray-300 text-base\">{content}</p>\n    </div>\n  );\n};\n\nexport default Card;"
+      },
+      "/pages/HomePage.js": {
+        "code": "import React from 'react';\n\nconst HomePage = () => {\n  return (\n    <div className=\"\">\n      <h2 className=\"text-xl font-bold mb-4\">Home Page</h2>\n      <p>Welcome to the PlayStation-like interface. Navigate to different sections using the links below.</p>\n      <ul className=\"list-disc pl-5\">\n        <li><a href=\"/games\" className=\"text-blue-500 hover:text-blue-700\">Games</a></li>\n        <li><a href=\"/settings\" className=\"text-blue-500 hover:text-blue-700\">Settings</a></li>\n      </ul>\n      <img src=\"https://via.placeholder.com/400x200?text=Home+Page+Image\" alt=\"Home Page\" className=\"mt-4 rounded shadow-md\" />\n    </div>\n  );\n};\n\nexport default HomePage;"
+      },
+      "/pages/GamesPage.js": {
+        "code": "import React from 'react';\n\nconst GamesPage = () => {\n  return (\n    <div>\n      <h2 className=\"text-xl font-bold mb-4\">Games Page</h2>\n      <p>Explore a list of available games here.</p>\n      <img src=\"https://via.placeholder.com/400x200?text=Games+Page+Image\" alt=\"Games Page\" className=\"mt-4 rounded shadow-md\" />\n    </div>\n  );\n};\n\nexport default GamesPage;"
+      },
+      "/pages/SettingsPage.js": {
+        "code": "import React from 'react';\n\nconst SettingsPage = () => {\n  return (\n    <div>\n      <h2 className=\"text-xl font-bold mb-4\">Settings Page</h2>\n      <p>Configure your application settings.</p>\n      <img src=\"https://via.placeholder.com/400x200?text=Settings+Page+Image\" alt=\"Settings Page\" className=\"mt-4 rounded shadow-md\" />\n    </div>\n  );\n};\n\nexport default SettingsPage;"
+      },
+      "/tailwind.config.js": {
+        "code": "/** @type {import('tailwindcss').Config} */\nmodule.exports = {\n  content: [\"./App.js\", \"./components/**/*.{js,jsx,ts,tsx}\", \"./pages/**/*.{js,jsx,ts,tsx}\"],\n  theme: {\n    extend: {},\n  },\n  plugins: [require('tailwindcss-animate')],\n}"
+      },
+      "/postcss.config.js": {
+        "code": "module.exports = {\n  plugins: {\n    tailwindcss: {},\n    autoprefixer: {},\n  },\n}"
+      },
+      "/package.json": {
+        "code": "{\n  \"name\": \"playstation-vibe\",\n  \"private\": true,\n  \"version\": \"0.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"lint\": \"eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"@headlessui/react\": \"^1.7.17\",\n    \"@mui/material\": \"^6.4.6\",\n    \"autoprefixer\": \"^10.4.17\",\n    \"firebase\": \"^11.1.0\",\n    \"framer-motion\": \"^10.0.0\",\n    \"lucide-react\": \"latest\",\n    \"postcss\": \"^8.4.31\",\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\",\n    \"react-icons\": \"^5.0.0\",\n    \"react-router-dom\": \"latest\",\n    \"tailwind-merge\": \"^2.4.0\",\n    \"tailwindcss\": \"^3.4.1\",\n    \"tailwindcss-animate\": \"^1.0.7\",\n    \"uuid\": \"^9.0.1\",\n    \"uuid4\": \"^2.0.3\"\n  },\n  \"devDependencies\": {\n    \"@vitejs/plugin-react\": \"^4.2.1\",\n    \"eslint\": \"^8.55.0\",\n    \"eslint-plugin-react\": \"^7.33.2\",\n    \"eslint-plugin-react-hooks\": \"^4.6.0\",\n    \"eslint-plugin-react-refresh\": \"^0.4.5\",\n    \"vite\": \"^5.0.8\"\n  }\n}"
+      }
+    },
+    "created_at": "2025-08-06T01:36:02.125533",
+    "updated_at": "2025-08-06T01:36:02.125533",
+    "thumbnail": null
+  }
+]

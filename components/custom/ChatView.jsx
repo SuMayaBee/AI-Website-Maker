@@ -9,7 +9,7 @@ import { useMutation } from 'convex/react';
 import Prompt from '@/data/Prompt';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
-import { aiChat } from '@/lib/fastapi-client';
+import { aiChat, getProject, updateProject } from '@/lib/fastapi-client';
 
 function ChatView() {
     const { id } = useParams();
@@ -24,11 +24,41 @@ function ChatView() {
     }, [id])
 
     const GetWorkSpaceData = async () => {
-        const result = await convex.query(api.workspace.GetWorkspace, {
-            workspaceId: id
-        });
-        setMessages(result?.messages);
-        console.log(result);
+        try {
+            // Check if this is a project ID (starts with 'project-')
+            if (id.startsWith('project-')) {
+                const projectId = id.replace('project-', '');
+                const project = await getProject(projectId);
+                
+                // Convert project data to messages format
+                if (project.prompt) {
+                    const projectMessages = [
+                        {
+                            role: 'user',
+                            content: project.prompt
+                        },
+                        {
+                            role: 'ai',
+                            content: `I've loaded your project: "${project.title}". ${project.description}`
+                        }
+                    ];
+                    setMessages(projectMessages);
+                }
+            } else {
+                // This is a regular Convex workspace
+                const result = await convex.query(api.workspace.GetWorkspace, {
+                    workspaceId: id
+                });
+                setMessages(result?.messages);
+                console.log(result);
+            }
+        } catch (error) {
+            console.error('Error loading workspace/project data:', error);
+            setMessages([{
+                role: 'ai',
+                content: 'Sorry, I could not load this workspace or project. Please try again.'
+            }]);
+        }
     }
 
     useEffect(() => {
@@ -51,10 +81,16 @@ function ChatView() {
                 content: result.result
             }
             setMessages(prev => [...prev, aiResp]);
-            await UpdateMessages({
-                messages: [...messages, aiResp],
-                workspaceId: id
-            })
+            // Only update Convex if this is a regular workspace, not a project
+            if (!id.startsWith('project-')) {
+                await UpdateMessages({
+                    messages: [...messages, aiResp],
+                    workspaceId: id
+                })
+            } else {
+                // If this is a project, save the conversation to the project
+                await saveConversationToProject([...messages, aiResp]);
+            }
         } catch (error) {
             console.error('Error getting AI response:', error);
             const errorResp = {
@@ -65,6 +101,36 @@ function ChatView() {
         }
         setLoading(false);
     }
+
+    const saveConversationToProject = async (updatedMessages) => {
+        try {
+            if (id.startsWith('project-')) {
+                const projectId = id.replace('project-', '');
+                
+                // Get the current project to preserve other data
+                const currentProject = await getProject(projectId);
+                
+                // Create a more meaningful description based on the latest conversation
+                const latestUserMessage = updatedMessages
+                    .filter(msg => msg.role === 'user')
+                    .slice(-1)[0]?.content || '';
+                
+                const enhancedDescription = latestUserMessage 
+                    ? `${currentProject.description} | Latest: ${latestUserMessage.substring(0, 100)}...`
+                    : currentProject.description;
+                
+                const updateData = {
+                    description: enhancedDescription,
+                    // Preserve existing files and other project data
+                };
+                
+                await updateProject(projectId, updateData);
+                console.log('Conversation context saved to project');
+            }
+        } catch (error) {
+            console.error('Error saving conversation to project:', error);
+        }
+    };
 
     const onGenerate = (input) => {
         setMessages(prev => [...prev, {
