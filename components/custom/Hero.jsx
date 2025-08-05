@@ -6,6 +6,7 @@ import React, { useContext, useState } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { useRouter } from 'next/navigation';
+import { enhancePrompt as enhancePromptAPI } from '@/lib/fastapi-client';
 
 function Hero() {
     const [userInput, setUserInput] = useState('');
@@ -31,15 +32,7 @@ function Hero() {
         
         setIsEnhancing(true);
         try {
-            const response = await fetch('/api/enhance-prompt', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ prompt: userInput }),
-            });
-
-            const data = await response.json();
+            const data = await enhancePromptAPI(userInput);
             if (data.enhancedPrompt) {
                 setUserInput(data.enhancedPrompt);
             }

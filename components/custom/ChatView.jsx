@@ -9,6 +9,7 @@ import { useMutation } from 'convex/react';
 import Prompt from '@/data/Prompt';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
+import { aiChat } from '@/lib/fastapi-client';
 
 function ChatView() {
     const { id } = useParams();
@@ -41,20 +42,27 @@ function ChatView() {
 
     const GetAiResponse = async () => {
         setLoading(true);
-        const PROMPT = JSON.stringify(messages) + Prompt.CHAT_PROMPT;
-        const result = await axios.post('/api/ai-chat', {
-            prompt: PROMPT
-        });
+        try {
+            const PROMPT = JSON.stringify(messages) + Prompt.CHAT_PROMPT;
+            const result = await aiChat(PROMPT);
 
-        const aiResp = {
-            role: 'ai',
-            content: result.data.result
+            const aiResp = {
+                role: 'ai',
+                content: result.result
+            }
+            setMessages(prev => [...prev, aiResp]);
+            await UpdateMessages({
+                messages: [...messages, aiResp],
+                workspaceId: id
+            })
+        } catch (error) {
+            console.error('Error getting AI response:', error);
+            const errorResp = {
+                role: 'ai',
+                content: 'Sorry, I encountered an error. Please try again.'
+            }
+            setMessages(prev => [...prev, errorResp]);
         }
-        setMessages(prev => [...prev, aiResp]);
-        await UpdateMessages({
-            messages: [...messages, aiResp],
-            workspaceId: id
-        })
         setLoading(false);
     }
 
