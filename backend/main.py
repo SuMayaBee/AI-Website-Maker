@@ -4,8 +4,11 @@ from pydantic import BaseModel
 import google.generativeai as genai
 import os
 import json
+import subprocess
+import time
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+from pathlib import Path
 import uuid
 from dotenv import load_dotenv
 
@@ -17,7 +20,7 @@ app = FastAPI(title="AI Website Builder Backend", version="1.0.0")
 # CORS middleware to allow frontend requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js frontend
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -94,6 +97,16 @@ class UpdateProjectRequest(BaseModel):
     description: Optional[str] = None
     files: Optional[Dict[str, Any]] = None
     thumbnail: Optional[str] = None
+
+# Deployment models
+class DeploymentRequest(BaseModel):
+    project_id: str
+
+class DeploymentResponse(BaseModel):
+    success: bool
+    url: str
+    deployment_id: str
+    message: str
 
 @app.get("/")
 async def root():
@@ -399,6 +412,135 @@ async def delete_project(project_id: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting project: {str(e)}")
+
+# Deployment Functions
+
+async def write_project_files(project_dir: str, files: dict):
+    """Write project files to disk"""
+    try:
+        # Create project directory
+        Path(project_dir).mkdir(parents=True, exist_ok=True)
+        
+        # Write each file
+        for file_path, file_content in files.items():
+            # Clean the file path
+            clean_path = file_path.lstrip('/')
+            full_path = os.path.join(project_dir, clean_path)
+            
+            # Create directory if needed
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+            
+            # Extract code content
+            if isinstance(file_content, dict) and 'code' in file_content:
+                content = file_content['code']
+            else:
+                content = str(file_content)
+            
+            # Write file
+            with open(full_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+        
+        # Create package.json if it doesn't exist
+        package_json_path = os.path.join(project_dir, 'package.json')
+        if not os.path.exists(package_json_path):
+            package_json = {
+                "name": f"deployed-project",
+                "version": "1.0.0",
+                "type": "module",
+                "scripts": {
+                    "dev": "vite",
+                    "build": "vite build",
+                    "preview": "vite preview"
+                },
+                "dependencies": {
+                    "react": "^18.2.0",
+                    "react-dom": "^18.2.0"
+                },
+                "devDependencies": {
+                    "vite": "^4.4.5",
+                    "@vitejs/plugin-react": "^4.0.3",
+                    "@types/react": "^18.2.15",
+                    "@types/react-dom": "^18.2.7"
+                }
+            }
+            
+            with open(package_json_path, 'w') as f:
+                json.dump(package_json, f, indent=2)
+        
+        # Create vite.config.js if it doesn't exist
+        vite_config_path = os.path.join(project_dir, 'vite.config.js')
+        if not os.path.exists(vite_config_path):
+            vite_config = """import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    outDir: 'build'
+  }
+})
+"""
+            with open(vite_config_path, 'w') as f:
+                f.write(vite_config)
+                
+        return True
+    except Exception as e:
+        print(f"Error writing project files: {e}")
+        return False
+
+@app.post("/api/deploy-project", response_model=DeploymentResponse)
+async def deploy_project(request: DeploymentRequest):
+    """Deploy a project to a unique subdomain"""
+    try:
+        project_id = request.project_id
+        
+        # Get project from database
+        projects = load_projects()
+        project = next((p for p in projects if p["id"] == project_id), None)
+        
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Create project directory
+        project_dir = f"/var/www/deployments/projects/{project_id}"
+        
+        # Write project files to disk
+        success = await write_project_files(project_dir, project["files"])
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to write project files")
+        
+        # Run build script
+        try:
+            result = subprocess.run([
+                "/var/www/deployments/build-project.sh", 
+                project_id
+            ], capture_output=True, text=True, timeout=300)  # 5 minute timeout
+            
+            if result.returncode == 0:
+                # Save deployment info (you can extend this)
+                deployment_url = f"http://{project_id}.sumayabee.me"
+                
+                return DeploymentResponse(
+                    success=True,
+                    url=deployment_url,
+                    deployment_id=project_id,
+                    message="Project deployed successfully!"
+                )
+            else:
+                print(f"Build failed: {result.stderr}")
+                raise HTTPException(
+                    status_code=500, 
+                    detail=f"Build failed: {result.stderr}"
+                )
+                
+        except subprocess.TimeoutExpired:
+            raise HTTPException(status_code=500, detail="Build timeout")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Deployment error: {e}")
+        raise HTTPException(status_code=500, detail=f"Deployment error: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

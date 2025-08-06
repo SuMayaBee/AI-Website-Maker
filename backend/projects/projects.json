@@ -58,7 +58,7 @@
       }
     },
     "created_at": "2025-08-06T01:33:03.537388",
-    "updated_at": "2025-08-06T02:18:44.014245",
+    "updated_at": "2025-08-06T10:45:08.135455",
     "thumbnail": null
   },
   {
@@ -67,8 +67,29 @@
     "description": "This React project aims to emulate a PlayStation-like interface using Tailwind CSS for styling. It includes modular components, page routing, reusable UI elements, and utilizes external images to simulate a dynamic application.  The project uses functional components and adheres to a clear folder structure for maintainability. No backend or database integrations are included in this version. The core functionality revolves around navigating different 'pages' within the application, akin to selecting options on a PlayStation menu. Placeholder images are used to represent various content types. The App.js file serves as the main entry point and sets up the routing and overall layout.",
     "prompt": "create a playstation vibe of project",
     "files": {
+      "/styles.css": {
+        "code": "body {\n  font-family: sans-serif;\n  -webkit-font-smoothing: auto;\n  -moz-font-smoothing: auto;\n  -moz-osx-font-smoothing: grayscale;\n  font-smoothing: auto;\n  text-rendering: optimizeLegibility;\n  font-smooth: always;\n  -webkit-tap-highlight-color: transparent;\n  -webkit-touch-callout: none;\n}\n\nh1 {\n  font-size: 1.5rem;\n}"
+      },
       "/App.js": {
         "code": "import React from 'react';\nimport { BrowserRouter as Router, Route, Routes } from 'react-router-dom';\nimport HomePage from './pages/HomePage';\nimport GamesPage from './pages/GamesPage';\nimport SettingsPage from './pages/SettingsPage';\nimport Button from './components/Button';\nimport Card from './components/Card';\n\nfunction App() {\n  return (\n    <Router>\n      <div className=\"bg-gray-900 text-white min-h-screen flex flex-col\">\n        <header className=\"bg-gray-800 p-4\">\n          <h1 className=\"text-2xl font-bold text-center\">PlayStation-like Interface</h1>\n        </header>\n\n        <main className=\"flex-grow p-4\">\n          <Routes>\n            <Route path=\"/\" element={<HomePage />} />\n            <Route path=\"/games\" element={<GamesPage />} />\n            <Route path=\"/settings\" element={<SettingsPage />} />\n          </Routes>\n        </main>\n\n        <footer className=\"bg-gray-800 p-4 text-center\">\n          <p>&copy; 2024 PlayStation Vibe</p>\n          <Button onClick={() => alert('Button Clicked')} className=\"mt-2\">Example Button</Button>\n          <Card title=\"Example Card\" content=\"This is an example card.\" />\n        </footer>\n      </div>\n    </Router>\n  );\n}\n\nexport default App;"
+      },
+      "/index.js": {
+        "code": "import React, { StrictMode } from \"react\";\nimport { createRoot } from \"react-dom/client\";\nimport \"./styles.css\";\n\nimport App from \"./App\";\n\nconst root = createRoot(document.getElementById(\"root\"));\nroot.render(\n  <StrictMode>\n    <App />\n  </StrictMode>\n);"
+      },
+      "/public/index.html": {
+        "code": "<!DOCTYPE html>\n            <html lang=\"en\">\n            <head>\n              <meta charset=\"UTF-8\">\n              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n              <title>Document</title>\n              <script src=\"https://cdn.tailwindcss.com\"></script>\n            </head>\n            <body>\n              <div id=\"root\"></div>\n            </body>\n            </html>"
+      },
+      "/package.json": {
+        "code": "{\n  \"name\": \"playstation-vibe\",\n  \"private\": true,\n  \"version\": \"0.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"lint\": \"eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"@headlessui/react\": \"^1.7.17\",\n    \"@mui/material\": \"^6.4.6\",\n    \"autoprefixer\": \"^10.0.0\",\n    \"firebase\": \"^11.1.0\",\n    \"framer-motion\": \"^10.0.0\",\n    \"lucide-react\": \"latest\",\n    \"postcss\": \"^8\",\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\",\n    \"react-icons\": \"^5.0.0\",\n    \"react-router-dom\": \"latest\",\n    \"tailwind-merge\": \"^2.4.0\",\n    \"tailwindcss\": \"^3.4.1\",\n    \"tailwindcss-animate\": \"^1.0.7\",\n    \"uuid\": \"^11.1.0\",\n    \"uuid4\": \"^2.0.3\",\n    \"@google/generative-ai\": \"^0.21.0\",\n    \"@heroicons/react\": \"^1.0.6\",\n    \"react-toastify\": \"^10.0.0\",\n    \"uuidv4\": \"^6.2.13\"\n  },\n  \"devDependencies\": {\n    \"@vitejs/plugin-react\": \"^4.2.1\",\n    \"eslint\": \"^8.55.0\",\n    \"eslint-plugin-react\": \"^7.33.2\",\n    \"eslint-plugin-react-hooks\": \"^4.6.0\",\n    \"eslint-plugin-react-refresh\": \"^0.4.5\",\n    \"vite\": \"^5.0.8\"\n  },\n  \"main\": \"/index.js\"\n}"
+      },
+      "/App.css": {
+        "code": "@tailwind base;\n            @tailwind components;\n            @tailwind utilities;"
+      },
+      "/tailwind.config.js": {
+        "code": "/** @type {import('tailwindcss').Config} */\nmodule.exports = {\n  content: [\"./App.js\", \"./components/**/*.{js,jsx,ts,tsx}\", \"./pages/**/*.{js,jsx,ts,tsx}\"],\n  theme: {\n    extend: {},\n  },\n  plugins: [require('tailwindcss-animate')],\n}"
+      },
+      "/postcss.config.js": {
+        "code": "module.exports = {\n  plugins: {\n    tailwindcss: {},\n    autoprefixer: {},\n  },\n}"
       },
       "/components/Button.js": {
         "code": "import React from 'react';\nimport { twMerge } from 'tailwind-merge';\n\nconst Button = ({ children, className, ...props }) => {\n  const defaultClassName = 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline';\n  const mergedClassName = twMerge(defaultClassName, className);\n\n  return (\n    <button className={mergedClassName} {...props}>\n      {children}\n    </button>\n  );\n};\n\nexport default Button;"
@@ -84,19 +105,10 @@
       },
       "/pages/SettingsPage.js": {
         "code": "import React from 'react';\n\nconst SettingsPage = () => {\n  return (\n    <div>\n      <h2 className=\"text-xl font-bold mb-4\">Settings Page</h2>\n      <p>Configure your application settings.</p>\n      <img src=\"https://via.placeholder.com/400x200?text=Settings+Page+Image\" alt=\"Settings Page\" className=\"mt-4 rounded shadow-md\" />\n    </div>\n  );\n};\n\nexport default SettingsPage;"
-      },
-      "/tailwind.config.js": {
-        "code": "/** @type {import('tailwindcss').Config} */\nmodule.exports = {\n  content: [\"./App.js\", \"./components/**/*.{js,jsx,ts,tsx}\", \"./pages/**/*.{js,jsx,ts,tsx}\"],\n  theme: {\n    extend: {},\n  },\n  plugins: [require('tailwindcss-animate')],\n}"
-      },
-      "/postcss.config.js": {
-        "code": "module.exports = {\n  plugins: {\n    tailwindcss: {},\n    autoprefixer: {},\n  },\n}"
-      },
-      "/package.json": {
-        "code": "{\n  \"name\": \"playstation-vibe\",\n  \"private\": true,\n  \"version\": \"0.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"lint\": \"eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"@headlessui/react\": \"^1.7.17\",\n    \"@mui/material\": \"^6.4.6\",\n    \"autoprefixer\": \"^10.4.17\",\n    \"firebase\": \"^11.1.0\",\n    \"framer-motion\": \"^10.0.0\",\n    \"lucide-react\": \"latest\",\n    \"postcss\": \"^8.4.31\",\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\",\n    \"react-icons\": \"^5.0.0\",\n    \"react-router-dom\": \"latest\",\n    \"tailwind-merge\": \"^2.4.0\",\n    \"tailwindcss\": \"^3.4.1\",\n    \"tailwindcss-animate\": \"^1.0.7\",\n    \"uuid\": \"^9.0.1\",\n    \"uuid4\": \"^2.0.3\"\n  },\n  \"devDependencies\": {\n    \"@vitejs/plugin-react\": \"^4.2.1\",\n    \"eslint\": \"^8.55.0\",\n    \"eslint-plugin-react\": \"^7.33.2\",\n    \"eslint-plugin-react-hooks\": \"^4.6.0\",\n    \"eslint-plugin-react-refresh\": \"^0.4.5\",\n    \"vite\": \"^5.0.8\"\n  }\n}"
       }
     },
     "created_at": "2025-08-06T01:36:02.125533",
-    "updated_at": "2025-08-06T01:36:02.125533",
+    "updated_at": "2025-08-06T10:50:07.151585",
     "thumbnail": null
   }
 ]
